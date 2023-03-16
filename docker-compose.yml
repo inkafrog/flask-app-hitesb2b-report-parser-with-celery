@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+
+  celery-worker:
+    build: .
+    command: ["celery", "-A", "src.app.celery", "worker"]
+    env_file:
+      - .env
+    volumes:
+      - /dev/shm:/dev/shm
+      - .:/code/
+    depends_on:
+      - web
+
+  redis:
+    image: "redis:latest"
+    expose:
+      - "6379"
+
+  web:
+    links:
+      - redis
+    env_file:
+      - .env
+    build: .
+    command: ["flask", "run"]
+    volumes:
+      - /dev/shm:/dev/shm
+      - .:/code
+    ports:
+      - "5000:5000"
